@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<script>
+    const validateForm = (id = Math.floor(Math.random() * 1000000)) => {
+        const nameInput = document.getElementById('name').value.trim();
+        const emailInput = document.getElementById('email').value.trim();
+        const phoneInput = document.getElementById('phone').value.trim();
+
+        if (!nameInput || !emailInput || !phoneInput) {
+            alert('Please fill in all fields.');
+            return false;
+        }
+
+        const userData = JSON.stringify({id: id, name: nameInput, email: emailInput, phone: phoneInput });
+        localStorage.setItem(`${id}`, userData);
+
+        alert(`Entry Added/Updated sucessfully !!`);
+        return true;
+    }
+
+    const deleteEntry = (id) => {
+        if (!confirm("Are you sure you want to delete this entry?")) {
+            return;
+        }
+        localStorage.removeItem(`${id}`);
+        alert(`Entry Deleted sucessfully !!`);
+        location.reload();
+    }
+
+    const editEntry = (id) => {
+        const storedData = localStorage.getItem(`${id}`);
+        if (!storedData) {
+            alert("Entry not found.");
+            return;
+        }
+
+        const userData = JSON.parse(storedData);
+        const nameInput = document.getElementById('name').value = userData.name;
+        const emailInput = document.getElementById('email').value = userData.email;
+        const phoneInput = document.getElementById('phone').value = userData.phone;
+
+        window.scrollTo(0, 0);
+
+        // Remove the old entry so that it can be updated with new values on form submission
+        localStorage.removeItem(`${id}`);
+        const submitButton = document.querySelector('.form button');
+        submitButton.textContent = "Update";
+    }
+
+    const filterData = () => {
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const dataList = document.querySelectorAll('#dataList');
+
+        dataList.forEach(item => {
+            const name = item.querySelector('#displayName').textContent.toLowerCase();
+            const email = item.querySelector('#displayEmail').textContent.toLowerCase();
+            if (!searchInput) {
+                item.style.display = 'block';
+                return;
+            }
+            if (name.includes(searchInput) || email.includes(searchInput)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    window.onload = () => {
+    const container = document.getElementById("formData");
+    localStorage.length > 0 && (document.getElementById("note").style.display = "none");
+
+    Object.keys(localStorage).forEach(key => {
+        const storedData = localStorage.getItem(key);
+
+        if (storedData) {
+            const userData = JSON.parse(storedData);
+            const userDiv = document.createElement("div");
+
+            userDiv.innerHTML = `
+                <ul id="dataList">
+                <li>ID: <span id="displayId">${userData.id}</span></li>
+                <li>Name: <span id="displayName">${userData.name}</span></li>
+                <li>Email: <span id="displayEmail">${userData.email}</span></li>
+                <li>Phone: <span id="displayPhone">${userData.phone}</span></li>
+                <div class="btnContainer">
+                    <button class="deleteBtn" onclick="deleteEntry(${userData.id})">Delete</button>
+                    <button class="editBtn" onclick="editEntry(${userData.id})">Edit</button>
+                    </div>
+                <hr>
+            </ul>
+            `;
+
+            container.appendChild(userDiv);
+        }
+    });
+    }
+
+</script>
+<style>
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    .formSection {
+        display: flex;
+        justify-content: center;
+        align-items: top;
+        width: fit;
+        margin: 5rem;
+        padding: 1rem 0rem;
+        flex-direction: column;
+    }
+
+    h1 {
+        text-align: center;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+    
+    .form {
+        border: 2px solid black;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        padding: 5rem;
+        border-radius: 20px;
+    }
+
+    .form input {
+        padding: 0.5rem;
+        font-size: 1rem;
+        border-radius: 10px;
+        border: none;
+        border-bottom: 2px solid rgb(255, 143, 143);
+    }
+
+    .form button {
+        padding: 0.5rem 5rem;
+        font-size: 1rem;
+        background-color: rgba(255, 155, 93, 0);
+        width: fit-content;
+        margin: 0 auto;
+        border: none;
+        border-top: 2px solid rgb(255, 143, 143);
+        border-bottom: 2px solid rgb(255, 143, 143);
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    .searchContainer {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .searchContainer input {
+        padding: 0.5rem;
+        font-size: 1rem;
+        border-radius: 10px;
+        border: 2px solid rgb(255, 143, 143);
+        width: 50%;
+    }
+
+    .formData {
+        border: 2px solid black;
+        display: flex;
+        flex-direction: column;
+        gap: 0rem;
+        border-radius: 20px;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        font-size: 1.5rem;
+    }
+
+    .btnContainer {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .deleteBtn {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        background-color: rgba(255, 155, 93, 0);
+        width: fit-content;
+        margin: 5px;
+        color: white;
+        background-color: rgb(245, 61, 61);
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    .editBtn {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        background-color: rgba(255, 155, 93, 0);
+        width: fit-content;
+        margin: 5px;
+        color: white;
+        background-color: rgb(61, 245, 61);
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+</style>
+<body>
+    <section class="formSection">
+        <h1>Form Validation</h1>
+        <form class="form" onsubmit="return validateForm()">
+            <input type="text" name="name" id="name" placeholder="Enter your name">
+            <input type="email" name="email" id="email" placeholder="Enter your email">
+            <input type="number" name="phone" id="phone" placeholder="Enter your phone number">
+            <button type="submit" value="Submit">Submit</button>
+        </form>
+    </section>
+    
+    <section class="formSection">
+        <h1>Form Data</h1>
+        <div class="searchContainer">
+            <input type="text" id="searchInput" placeholder="Search by name or email..." oninput="filterData()">
+        </div>
+        <div id="formData" class="formData">
+            <h3 id="note" style="text-align: center;">No entries yet !!</h3>
+        </div>
+    </section>
+</body>
+</html>
