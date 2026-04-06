@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cocktail Finder</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <style>
+      body {
+        font-family: Arial;
+        background: #121212;
+        color: white;
+        text-align: center;
+      }
+
+      input {
+        padding: 10px;
+        width: 250px;
+        border-radius: 8px;
+        border: none;
+        margin: 10px;
+      }
+
+      button {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 8px;
+        background: orange;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .card {
+        width: 250px;
+        background: #1e1e1e;
+        border-radius: 10px;
+        padding: 10px;
+        cursor: pointer;
+      }
+
+      img {
+        width: 100%;
+        border-radius: 10px;
+      }
+
+      .popup {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .popup-content {
+        background: #222;
+        padding: 20px;
+        border-radius: 10px;
+        width: 300px;
+      }
+
+      .close {
+        cursor: pointer;
+        float: right;
+        font-size: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Cocktail Finder</h1>
+
+    <input type="text" id="searchInput" placeholder="Search cocktail..." />
+    <button onclick="searchCocktail()">Search</button>
+    <button onclick="getRandom()">Random</button>
+    <button onclick="loadDefault()">Reset</button>
+
+    <div class="container" id="cocktailList"></div>
+
+    <div class="popup" id="popup">
+      <div class="popup-content">
+        <span class="close" onclick="closePopup()">✖</span>
+        <img id="popupImage" src="" alt="Cocktail Image" />
+        <h2 id="popupTitle"></h2>
+        <ul id="popupIngredients"></ul>
+      </div>
+    </div>
+
+    <script>
+      const API = "https://www.thecocktaildb.com/api/json/v1/1";
+
+      function displayCocktails(drinks) {
+        const container = document.getElementById("cocktailList");
+        container.innerHTML = "";
+
+        drinks.slice(0, 20).forEach((drink) => {
+          container.innerHTML += `
+      <div class="card" onclick='showPopup(${JSON.stringify(drink)})'>
+        <h3>${drink.strDrink}</h3>
+        <img src="${drink.strDrinkThumb}">
+        <p>${drink.strAlcoholic}</p>
+      </div>
+    `;
+        });
+      }
+
+      function showPopup(drink) {
+        document.getElementById("popupTitle").innerText = drink.strDrink;
+        document.getElementById("popupImage").src = drink.strDrinkThumb;
+        const list = document.getElementById("popupIngredients");
+        list.innerHTML = "";
+
+        for (let i = 1; i <= 15; i++) {
+          if (drink["strIngredient" + i]) {
+            list.innerHTML += `<li>${drink["strIngredient" + i]} - ${drink["strMeasure" + i] || ""}</li>`;
+          }
+        }
+
+        document.getElementById("popup").style.display = "flex";
+      }
+
+      function closePopup() {
+        document.getElementById("popup").style.display = "none";
+      }
+
+      async function loadDefault() {
+        const res = await axios.get(`${API}/search.php?s=a`);
+        displayCocktails(res.data.drinks || []);
+      }
+
+      async function searchCocktail() {
+        const query = document
+          .getElementById("searchInput")
+          .value.toUpperCase();
+        const res = await axios.get(`${API}/search.php?s=${query}`);
+        displayCocktails(res.data.drinks || []);
+      }
+
+      async function getRandom() {
+        const res = await axios.get(`${API}/random.php`);
+        displayCocktails(res.data.drinks);
+      }
+
+      loadDefault();
+    </script>
+  </body>
+</html>
